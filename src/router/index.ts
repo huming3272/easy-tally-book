@@ -1,14 +1,18 @@
 import Vue from 'vue';
-import VueRouter, { RouteConfig } from 'vue-router';
-import Home from '../views/Home.vue';
+import VueRouter, {RouteConfig} from 'vue-router';
+import Collection from '../views/Collection.vue';
 
 Vue.use(VueRouter);
 
 const routes: RouteConfig[] = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
+    redirect: '/collection',
+  },
+  {
+    path: '/collection',
+    name: 'Collection',
+    component: Collection,
   },
   {
     path: '/about',
