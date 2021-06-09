@@ -5,11 +5,15 @@
 </template>
 
 <script lang="ts">
-  // eslint-disable-next-line no-undef
-    const importAll = (requireContext: __WebpackModuleApi.RequireContext) => requireContext.keys().forEach(requireContext);
-    try {importAll(require.context('@/assets/icons', true, /\.svg$/)); } catch (error) {console.log(error); }
+// eslint-disable-next-line no-undef
+    const importAll = (requireContext: __WebpackModuleApi.RequireContext) =>
+      requireContext.keys()
+        .forEach(requireContext);
+    try {importAll(
+      require.context('@/assets/icons', true, /\.svg$/),
+    ); } catch (error) {console.log(error); }
 
-export default {
+    export default {
   props: ['iconname'],
   name: 'Icon',
 };
