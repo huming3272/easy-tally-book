@@ -39,4 +39,5 @@ const iconsName: string[] = [
   '奖金',
   '其他',
 ];
+
 export default iconsName;

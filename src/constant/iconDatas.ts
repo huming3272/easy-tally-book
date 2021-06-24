@@ -1,18 +1,31 @@
 import iconsName from '@/constant/iconsName.ts';
 import iconsSrc from '@/constant/iconsSrc.ts';
-interface iconGroup {
-  name: string;
-  src: string;
-}
-const array: iconGroup[] = [];
+import tagId from '@/lib/tagId.ts';
+// interface iconGroup {
+//   name: string;
+//   src: string;
+//   id: number;
+//   type: 'default';
+// }
+const array: IconGroup[] = [];
 const iconData = () => {
     for (let i = 0; i < iconsName.length; i++) {
-      const group = {
+
+      const group: IconGroup = {
         name: iconsName[i],
         src: iconsSrc[i],
+        id: i + 1,
+        type: 'default',
+
       };
       array.push(group);
+      // console.log('arr',group.id)
+
     }
+    if (JSON.parse(localStorage.getItem('iconDatas') || '[]').length === 0) {
+      localStorage.setItem('iconDatas', JSON.stringify(array));
+    }
+
     return array;
 };
 export default iconData();

@@ -1,30 +1,40 @@
 <template>
-    <div class="tagsWrapper">
-        <div class="tags">
+    <div class="tabsWrapper">
+        <div class="tabs">
             <span :class="{'active':state==='pay'}" @click="select('pay')">支出</span>
             <span :class="{'active':state==='earn'}" @click="select('earn')">收入</span>
         </div>
     </div>
 </template>
 
-<script>
-    import Vue from 'vue'
-    import {Component} from 'vue-property-decorator'
+<script lang='ts'>
+import Vue from 'vue';
+import {Component, Prop, Watch} from 'vue-property-decorator';
 
-    @Component
-    export default class Tags extends Vue {
-        state= 'pay'
-        select(state){
-            this.state = state
+@Component
+export default class Tabs extends Vue {
+    @Prop(String) public value!: string;
+    @Prop() public submit!: boolean;
+    public state = 'pay';
+    @Watch('submit')
+    public init() {
+        if (this.submit) {
+          this.state = 'pay';
         }
+
     }
+    public select(state: string) {
+        this.state = state;
+        this.$emit('update:value', this.state);
+    }
+}
 </script>
 
 <style lang='scss' scoped>
-    .tagsWrapper{
+    .tabsWrapper{
         padding: 10px 0 15px 0;
-        >.tags{
-            width: 33%;
+        >.tabs{
+            width: 160px;
             margin: 0 auto;
             display:flex;
             justify-content: space-between;

@@ -3,13 +3,22 @@ import App from './App.vue';
 import './registerServiceWorker';
 import router from './router';
 import store from './store';
-import Tags from '@/components/Tags.vue';
+
+
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.use(ElementUI);
+
+
+import Tabs from '@/components/Tabs.vue';
 import Icon from '@/components/Icon.vue';
+import Layout from '@/components/Layout.vue';
 
 Vue.config.productionTip = false;
 
-Vue.component('Tags', Tags);
+Vue.component('Tabs', Tabs);
 Vue.component('Icon', Icon);
+Vue.component('Layout', Layout);
 
 new Vue({
   router,
