@@ -14,7 +14,7 @@
             <input v-model="newTags.name" type="text" maxlength=10 ref="input" placeholder="请输入标签名">
             <span @click="clearName">清除</span>
         </div>
-        <Tags :text="false" :data="iconDatas" :tagSrc.sync="newTags.src" :currentTagSrc="newTags.src"></Tags>
+        <Tags :text="false" :data="iconDatas"  :currentTagSrc.sync="newTags.src"></Tags>
     </div>
 </template>
 
@@ -32,7 +32,8 @@ export default class CreateTag extends Vue {
   public iconDatas = iconDatas;
   public title = '';
   public id = 0 || parseInt(this.$route.query.id as string, 10);
-  public selfTagsList: CreatedTags[] = [];
+  public selfTagsList: CreatedTags[] = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
+  public tallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
   public newTags: CreatedTags = {
     name: '',
     src: '',
@@ -59,19 +60,40 @@ export default class CreateTag extends Vue {
         // 有id说明要修改标签属性
         this.newTags.id = this.id;
         const currentTag = this.selfTagsList.filter((item) => {
-              return item.id === this.id;
+          return item.id === this.id;
         })[0];
         const currentIndex = this.selfTagsList.indexOf(currentTag);
         this.selfTagsList[currentIndex] = this.newTags;
+        const isTagExist = this.tallyRecord.filter(
+          (item: RecordItem) => {
+            return item.tagId === this.id;
+          },
+        );
+        // 找到记账记录中存在标签
+        if (isTagExist.length > 0) {
+            for (const item of this.tallyRecord) {
+              item.name = this.newTags.name;
+              item.tag = this.newTags.src;
+            }
 
-        // selfTagsList.push(this.newTags)
+            localStorage.setItem('tallyRecord', JSON.stringify(this.tallyRecord));
+            this.$message({
+            message: '发现标签在记账中出现，将一起进行更改',
+            type: 'success',
+            duration: 2000,
+            offset: 150,
+          });
+        } else {
+          // selfTagsList.push(this.newTags)
+
+           this.$message({
+            message: '标签修改成功',
+            type: 'success',
+            duration: 2000,
+            offset: 150,
+          });
+        }
         localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
-        this.$message({
-          message: '标签修改成功',
-          type: 'success',
-          duration: 2000,
-          offset: 150,
-        });
         return;
       }
       this.newTags.id = tagId();
@@ -100,14 +122,11 @@ export default class CreateTag extends Vue {
           return item.id === this.id;
     })[0];
     this.newTags = currentTag;
-    // this.newTags.src = 'dailyUse'
-    console.log(this.newTags.src);
-    console.log('newtag', this.newTags);
+
   }
 
   public beforeMount() {
-    const selfTagsList = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
-    this.selfTagsList = selfTagsList;
+
     if (this.id) {
       this.title = '修改标签';
       this.getSelfTags(this.id);

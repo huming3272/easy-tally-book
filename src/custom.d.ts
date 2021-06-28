@@ -1,6 +1,8 @@
 interface RecordItem {
   id: number;
+  tagId: number;
   tag: string;
+  name: string;
   note: string;
   type: string;
   date: string;

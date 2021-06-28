@@ -186,7 +186,21 @@ export default class NumberPad extends Vue {
   public ok() {
     // this.$emit('update:amount', this.parse);
     if (this.note.length > 9 ) {
-      return Message.warning('备注字数超过9个');
+      return this.$message({
+        message: '字数超过9个',
+        type: 'warning',
+        duration: 1000,
+        offset: 200,
+      });
+    }
+    if (!this.eDate) {
+      return this.$message({
+        message: '请填写日期',
+        type: 'warning',
+        duration: 1000,
+        offset: 200,
+      });
+
     }
     this.$emit('update:note', this.note);
     this.$emit('update:date', this.date);

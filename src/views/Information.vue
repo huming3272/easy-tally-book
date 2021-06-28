@@ -11,8 +11,9 @@
                 </li>
                 <li v-for="item in selfTagsList" :key="item.id">
 
-                        <router-link :to="{path:'createTag',query:{id:item.id}}"   class="type">
-                            <Icon class="sub" iconname="sub" :data-id="item.id" :data-type="item.type"></Icon>
+                    <div class="type">
+                        <Icon class="sub" iconname="sub" :data-id="item.id" :data-type="item.type"></Icon>
+                        <router-link :to="{path:'createTag',query:{id:item.id}}">
                             <div class="typeRight">
                                 <span>{{item.name}}</span>
                                 <div class="iconWrapper">
@@ -20,6 +21,8 @@
                                 </div>
                             </div>
                         </router-link>
+
+                    </div>
 
                 </li>
                 <!--                -->
@@ -39,7 +42,7 @@
                     </div>
                 </li>
             </ul>
-                <!--                -->
+            <!--                -->
             <ul @click="recoverTag">
                 <li class="typeTitle">
                     待恢复默认类别 <span v-if="pendingDatas.length === 0">(暂无)</span>
@@ -61,14 +64,15 @@
 </template>
 
 <script lang="ts">
-import {MessageBox} from 'element-ui';
+import {Message} from 'element-ui';
 import {Component, Vue} from 'vue-property-decorator';
+
 @Component
 export default class Information extends Vue {
   public iconDatas = JSON.parse(localStorage.getItem('iconDatas') || '[]');
   public pendingDatas = JSON.parse(localStorage.getItem('pendingDatas') || '[]');
   public selfTagsList = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
-  public from = '2243';
+  public tallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
 
   get sortIconDatas() {
     const array = this.iconDatas.sort((item1: CreatedTags, item2: CreatedTags) => {
@@ -83,74 +87,100 @@ export default class Information extends Vue {
   }
 
   public removeTag(event: any) {
-
     const currentElement = event.target;
     // console.dir(currentElement)
     let currentSvg: any;
+    // 当前的svg图标，+/-
     if (currentElement.tagName === 'svg') {
-          currentSvg = currentElement.dataset;
+      currentSvg = currentElement.dataset;
     } else if (currentElement.nodeName === 'use') {
-          currentSvg = currentElement.parentNode.dataset;
+      currentSvg = currentElement.parentNode.dataset;
     }
+
     if (!currentSvg) {
       // 为空就不运行
       return;
     }
 
-
     if (currentSvg.type === 'creation') {
 
-        this.$confirm('永久删除该标签?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }).then(() => {
+      this.$confirm('永久删除该标签?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }).then(() => {
 
-          const currentTag = this.selfTagsList.filter((item: CreatedTags) => {
-            return item.id === parseInt(currentSvg.id, 10);
-          })[0];
-          const tagIndex = this.selfTagsList.indexOf(currentTag);
-          this.selfTagsList.splice(tagIndex, 1);
-          localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
+        const isTagExist = this.tallyRecord.filter(
+          (item: RecordItem) => {
+            return item.tagId === parseInt(currentSvg.id, 10);
+          },
+        )[0];
+        if (isTagExist) {
+          return this.$message({
+            dangerouslyUseHTMLString: true,
+            message: `
+                  <h3>发现标签在记账中出现，请删除记账记录后重试</h3>
+                  <hr>
+                  <ul>
+                          <li>
+                              <span >标签名:</span><span >${isTagExist.name}</span>
+                          </li>
+                          <li>
+                              <span >备注:</span><span >${isTagExist.note}</span>
+                          </li>
+                          <li>
+                              <span >金额:</span><span >${isTagExist.amount}</span>
+                          </li>
+                  </ul>`,
+            type: 'warning',
+            duration: 3000,
+            offset: 150,
+          });
+        }
 
-          this.$message({
-            type: 'success',
-            message: '删除成功!',
-          });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          });
+        const currentTag = this.selfTagsList.filter((item: CreatedTags) => {
+          return item.id === parseInt(currentSvg.id, 10);
+        })[0];
+        const tagIndex = this.selfTagsList.indexOf(currentTag);
+        this.selfTagsList.splice(tagIndex, 1);
+        localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
+
+        this.$message({
+          type: 'success',
+          message: '删除成功!',
         });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除',
+        });
+      });
 
     } else if (currentSvg.type === 'default') {
 
-        this.$confirm('将该标签转移到默认类别, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }).then(() => {
-          const currentTag = this.iconDatas.filter((item: CreatedTags) => {
-            return item.id === parseInt(currentSvg.id, 10);
-          })[0];
-          const tagIndex = this.iconDatas.indexOf(currentTag);
-          this.iconDatas.splice(tagIndex, 1);
-          this.pendingDatas.push(currentTag);
-          localStorage.setItem('iconDatas', JSON.stringify(this.iconDatas));
-          localStorage.setItem('pendingDatas', JSON.stringify(this.pendingDatas));
-          this.$message({
-            type: 'success',
-            message: '删除成功!',
-          });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          });
+      this.$confirm('将该标签转移到默认类别, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }).then(() => {
+        const currentTag = this.iconDatas.filter((item: CreatedTags) => {
+          return item.id === parseInt(currentSvg.id, 10);
+        })[0];
+        const tagIndex = this.iconDatas.indexOf(currentTag);
+        this.iconDatas.splice(tagIndex, 1);
+        this.pendingDatas.push(currentTag);
+        localStorage.setItem('iconDatas', JSON.stringify(this.iconDatas));
+        localStorage.setItem('pendingDatas', JSON.stringify(this.pendingDatas));
+        this.$message({
+          type: 'success',
+          message: '删除成功!',
         });
-
-
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除',
+        });
+      });
 
 
     }
@@ -187,12 +217,21 @@ export default class Information extends Vue {
   }
 
 
-
-
 }
 </script>
 
 <style lang='scss' scoped>
+    .key,.value{
+        font-size: 40px;
+    }
+    .key {
+        color: #FE9A2E;
+    }
+
+    .value {
+        color: teal;
+    }
+
     .title {
         box-shadow: 0 -4px 5px -5px rgba(0, 0, 0, 0.2) inset;
         position: relative;
@@ -244,6 +283,7 @@ export default class Information extends Vue {
                     justify-content: space-between;
                     align-items: center;
                     padding: 15px 0;
+
                     > .sub {
                         width: 30px;
                         height: 30px;
@@ -262,10 +302,16 @@ export default class Information extends Vue {
                         cursor: pointer;
                     }
 
-                    > .typeRight {
+                    > a {
+                        flex-grow: 1;
+
+                    }
+
+                    .typeRight {
                         display: flex;
-                        justify-content: space-between;
+                        justify-content: flex-end;
                         align-items: center;
+                        text-align: right;
 
                         > .iconWrapper {
                             display: flex;
@@ -290,6 +336,7 @@ export default class Information extends Vue {
                         }
 
                     }
+
                 }
 
             }
