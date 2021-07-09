@@ -6,6 +6,7 @@ import Chart from '../views/Chart.vue';
 import Statistics from '../views/Statistics.vue';
 import Notfound from '../views/Notfound.vue';
 import createTag from '../views/CreateTag.vue';
+import Details from '../views/Details.vue';
 
 Vue.use(VueRouter);
 
@@ -13,7 +14,7 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     // redirect: '/collection',
-    redirect: '/createTag',
+    redirect: '/statistics',
   },
   {
     path: '/collection',
@@ -39,6 +40,11 @@ const routes: RouteConfig[] = [
     path: '/createTag',
     name: 'createTag',
     component: createTag,
+  },
+  {
+    path: '/details',
+    name: 'details',
+    component: Details,
   },
   {
     path: '/about',

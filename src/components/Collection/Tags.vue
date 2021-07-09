@@ -19,7 +19,7 @@ import {Component, Prop, Watch, Vue} from 'vue-property-decorator';
 @Component
 export default class Tags extends Vue {
   @Prop(Boolean) public submit?: boolean;
-  @Prop() public data!: IconGroup[];
+  @Prop() public data!: CreatedTags[];
   @Prop() public text!: boolean;
   @Prop() public currentTagSrc?: string;
   @Prop() public use?: string;

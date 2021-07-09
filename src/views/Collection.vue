@@ -5,7 +5,7 @@
             <Tabs :value.sync="record.type" :submit="flag"></Tabs>
         </div>
         <div class="contentWrapper">
-            <Tags :text="true" use="collection" :data="iconDatas" :value.sync="record.tagId" :currentTagSrc.sync="record.tag" :tagName.sync="record.name" :submit="flag"></Tags>
+            <Tags :text="true" use="collection" :data="iconDatas" :value.sync="record.tagId"  :submit="flag"></Tags>
         </div>
         <NumberPad :submit.sync="flag" :note.sync="record.note" :date.sync="record.date" :amount.sync="record.amount"
                    @submit="saveData"></NumberPad>
@@ -30,21 +30,16 @@ export default class Collection extends Vue {
     id: 0,
     type: 'pay',
     tagId: 0,
-    tag: '',
-    name: '',
     note: '',
     date: '',
     amount: 0,
+    search: '',
   };
   public h = 0;
 
   public beforeMount() {
-    const selfTagsList = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
-    const iconDatas = JSON.parse(localStorage.getItem('iconDatas') || '[]');
-    const finishedIcons = selfTagsList.concat(iconDatas).sort((item1: CreatedTags, item2: CreatedTags) => {
-      return item2.id - item1.id;
-    });
-    this.iconDatas = finishedIcons;
+    this.$store.commit('fetchTags');
+    this.iconDatas = this.$store.state.mergeIcon;
   }
 
   public mounted() {
@@ -52,8 +47,14 @@ export default class Collection extends Vue {
   }
 
   public saveData(data: number) {
+
     this.record.id = recordId();
     this.record.amount = data;
+
+    const currentTag = this.iconDatas.filter((item: CreatedTags) => {
+        return item.id === this.record.tagId;
+    })[0];
+    this.record.search = `${this.record.note},${this.record.amount},${currentTag.name}`;
     const recordData = JSON.parse(localStorage.getItem('tallyRecord') || '[]') as RecordItem[];
     recordData.push(this.record);
     localStorage.setItem('tallyRecord', JSON.stringify(recordData));

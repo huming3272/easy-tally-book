@@ -200,6 +200,15 @@ export default class NumberPad extends Vue {
         duration: 1000,
         offset: 200,
       });
+    }
+    if (!this.output) {
+      return this.$message({
+          message: '请填写价格',
+          type: 'warning',
+          duration: 2000,
+          offset: 150,
+        },
+      );
 
     }
     this.$emit('update:note', this.note);

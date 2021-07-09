@@ -7,11 +7,11 @@ import tagId from '@/lib/tagId.ts';
 //   id: number;
 //   type: 'default';
 // }
-const array: IconGroup[] = [];
+const array: CreatedTags[] = [];
 const iconData = () => {
     for (let i = 0; i < iconsName.length; i++) {
 
-      const group: IconGroup = {
+      const group: CreatedTags = {
         name: iconsName[i],
         src: iconsSrc[i],
         id: i + 1,

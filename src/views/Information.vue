@@ -69,15 +69,22 @@ import {Component, Vue} from 'vue-property-decorator';
 
 @Component
 export default class Information extends Vue {
-  public iconDatas = JSON.parse(localStorage.getItem('iconDatas') || '[]');
-  public pendingDatas = JSON.parse(localStorage.getItem('pendingDatas') || '[]');
-  public selfTagsList = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
-  public tallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
+  public iconDatas = [] as CreatedTags[];
+  public pendingDatas = [] as CreatedTags[];
+  public selfTagsList = [] as CreatedTags[];
+  public tallyRecord = [] as RecordItem[];
 
+  public beforeMount() {
+    this.$store.commit('fetchTags');
+    this.iconDatas = this.$store.state.iconDatas;
+    this.pendingDatas = this.$store.state.pendingDatas;
+    this.selfTagsList = this.$store.state.selfTagsList;
+  }
   get sortIconDatas() {
     const array = this.iconDatas.sort((item1: CreatedTags, item2: CreatedTags) => {
       return item1.id - item2.id;
     });
+
     return array;
   }
 
@@ -87,133 +94,13 @@ export default class Information extends Vue {
   }
 
   public removeTag(event: any) {
-    const currentElement = event.target;
-    // console.dir(currentElement)
-    let currentSvg: any;
-    // 当前的svg图标，+/-
-    if (currentElement.tagName === 'svg') {
-      currentSvg = currentElement.dataset;
-    } else if (currentElement.nodeName === 'use') {
-      currentSvg = currentElement.parentNode.dataset;
-    }
+    this.$store.commit('fetchRecord');
+    this.$store.commit('removeTag', event);
 
-    if (!currentSvg) {
-      // 为空就不运行
-      return;
-    }
-
-    if (currentSvg.type === 'creation') {
-
-      this.$confirm('永久删除该标签?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }).then(() => {
-
-        const isTagExist = this.tallyRecord.filter(
-          (item: RecordItem) => {
-            return item.tagId === parseInt(currentSvg.id, 10);
-          },
-        )[0];
-        if (isTagExist) {
-          return this.$message({
-            dangerouslyUseHTMLString: true,
-            message: `
-                  <h3>发现标签在记账中出现，请删除记账记录后重试</h3>
-                  <hr>
-                  <ul>
-                          <li>
-                              <span >标签名:</span><span >${isTagExist.name}</span>
-                          </li>
-                          <li>
-                              <span >备注:</span><span >${isTagExist.note}</span>
-                          </li>
-                          <li>
-                              <span >金额:</span><span >${isTagExist.amount}</span>
-                          </li>
-                  </ul>`,
-            type: 'warning',
-            duration: 3000,
-            offset: 150,
-          });
-        }
-
-        const currentTag = this.selfTagsList.filter((item: CreatedTags) => {
-          return item.id === parseInt(currentSvg.id, 10);
-        })[0];
-        const tagIndex = this.selfTagsList.indexOf(currentTag);
-        this.selfTagsList.splice(tagIndex, 1);
-        localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
-
-        this.$message({
-          type: 'success',
-          message: '删除成功!',
-        });
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除',
-        });
-      });
-
-    } else if (currentSvg.type === 'default') {
-
-      this.$confirm('将该标签转移到默认类别, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }).then(() => {
-        const currentTag = this.iconDatas.filter((item: CreatedTags) => {
-          return item.id === parseInt(currentSvg.id, 10);
-        })[0];
-        const tagIndex = this.iconDatas.indexOf(currentTag);
-        this.iconDatas.splice(tagIndex, 1);
-        this.pendingDatas.push(currentTag);
-        localStorage.setItem('iconDatas', JSON.stringify(this.iconDatas));
-        localStorage.setItem('pendingDatas', JSON.stringify(this.pendingDatas));
-        this.$message({
-          type: 'success',
-          message: '删除成功!',
-        });
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除',
-        });
-      });
-
-
-    }
   }
 
   public recoverTag(event: any) {
-    const currentElement = event.target;
-    // console.dir(currentElement)
-    let currentSvg: any;
-    if (currentElement.tagName === 'svg') {
-      currentSvg = currentElement.dataset;
-    } else if (currentElement.nodeName === 'use') {
-      currentSvg = currentElement.parentNode.dataset;
-    }
-    if (!currentSvg) {
-      // 为空就不运行
-      return;
-    }
-    if (currentSvg.type === 'default') {
-      const currentTag = this.pendingDatas.filter((item: CreatedTags) => {
-        return item.id === parseInt(currentSvg.id, 10);
-      })[0];
-      const tagIndex = this.pendingDatas.indexOf(currentTag);
-      this.pendingDatas.splice(tagIndex, 1);
-      this.iconDatas.push(currentTag);
-      localStorage.setItem('iconDatas', JSON.stringify(this.iconDatas));
-      localStorage.setItem('pendingDatas', JSON.stringify(this.pendingDatas));
-      this.$message({
-        message: '标签已恢复到默认类别',
-        type: 'success',
-        duration: 1000,
-      });
-    }
+    this.$store.commit('recoverTag', event);
   }
 
 
@@ -262,7 +149,7 @@ export default class Information extends Vue {
     }
 
     .typeWrapper {
-        margin-top: 85px;
+        margin: 85px 0 68px 0;
         color: #b4b4b4;
         font-size: 18px;
         text-align: left;

@@ -23,17 +23,16 @@ import Tags from '@/components/Collection/Tags.vue';
 import iconDatas from '@/constant/iconDatas.ts';
 import tagId from '@/lib/tagId.ts';
 import { Message } from 'element-ui';
-import {Component, Vue} from 'vue-property-decorator';
+import {Component, Vue, Watch} from 'vue-property-decorator';
 
 @Component({
   components: {Tags},
 })
 export default class CreateTag extends Vue {
-  public iconDatas = iconDatas;
+  public iconDatas  = [] as CreatedTags[];
   public title = '';
   public id = 0 || parseInt(this.$route.query.id as string, 10);
   public selfTagsList: CreatedTags[] = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
-  public tallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
   public newTags: CreatedTags = {
     name: '',
     src: '',
@@ -41,6 +40,17 @@ export default class CreateTag extends Vue {
     type: 'creation',
   };
 
+  public beforeMount() {
+    this.$store.commit('fetchTags');
+    this.iconDatas = this.$store.state.iconDatas;
+    if (this.id) {
+      this.title = '修改标签';
+      this.$store.commit('getCurrentTags', this.id);
+      this.newTags = this.$store.state.currentTag;
+    } else {
+      this.title = '新建标签';
+    }
+  }
   public toBack() {
     this.$router.replace('/information');
   }
@@ -49,6 +59,11 @@ export default class CreateTag extends Vue {
   }
   public save() {
     if (this.newTags.name) {
+      this.$store.commit('existName', this.newTags.name);
+      if (this.$store.state.existName) {
+        this.$store.commit('iniExistName');
+        return;
+      }
       if (this.newTags.name.length > 10) {
         return this.$message({
           message: '标签字数超过10字',
@@ -58,54 +73,15 @@ export default class CreateTag extends Vue {
       }
       if (this.id) {
         // 有id说明要修改标签属性
-        this.newTags.id = this.id;
-        const currentTag = this.selfTagsList.filter((item) => {
-          return item.id === this.id;
-        })[0];
-        const currentIndex = this.selfTagsList.indexOf(currentTag);
-        this.selfTagsList[currentIndex] = this.newTags;
-        const isTagExist = this.tallyRecord.filter(
-          (item: RecordItem) => {
-            return item.tagId === this.id;
-          },
-        );
-        // 找到记账记录中存在标签
-        if (isTagExist.length > 0) {
-            for (const item of this.tallyRecord) {
-              item.name = this.newTags.name;
-              item.tag = this.newTags.src;
-            }
-
-            localStorage.setItem('tallyRecord', JSON.stringify(this.tallyRecord));
-            this.$message({
-            message: '发现标签在记账中出现，将一起进行更改',
-            type: 'success',
-            duration: 2000,
-            offset: 150,
-          });
-        } else {
-          // selfTagsList.push(this.newTags)
-
-           this.$message({
-            message: '标签修改成功',
-            type: 'success',
-            duration: 2000,
-            offset: 150,
-          });
-        }
-        localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
+        this.$store.commit('updateTags', {id: this.id, newTags: this.newTags});
         return;
+      } else if (!this.id) {
+        // 链接没id就说明是创建标签
+        this.newTags.id = tagId();
+        this.$store.commit('createTags', this.newTags);
       }
-      this.newTags.id = tagId();
-      this.selfTagsList.push(this.newTags);
-      localStorage.setItem('selfTagsList', JSON.stringify(this.selfTagsList));
-      this.$message({
-          message: '标签添加成功',
-          type: 'success',
-          duration: 2000,
-          offset: 150,
-        });
-    } else {
+
+    } else if (!this.newTags.name) {
       this.$message({
         message: '请填写标签名',
         type: 'warning',
@@ -113,27 +89,9 @@ export default class CreateTag extends Vue {
       });
     }
   }
-  public getSelfTags(id: number) {
 
-    if (!this.selfTagsList) {
-      return;
-    }
-    const currentTag = this.selfTagsList.filter((item: CreatedTags) => {
-          return item.id === this.id;
-    })[0];
-    this.newTags = currentTag;
 
-  }
 
-  public beforeMount() {
-
-    if (this.id) {
-      this.title = '修改标签';
-      this.getSelfTags(this.id);
-    } else {
-      this.title = '新建标签';
-    }
-  }
 }
 </script>
 
