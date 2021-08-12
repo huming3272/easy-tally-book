@@ -13,5 +13,7 @@
 </script>
 
 <style lang='scss' scoped>
-
+    h1{
+        color: #333333;
+    }
 </style>

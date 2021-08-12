@@ -7,6 +7,8 @@ import Statistics from '../views/Statistics.vue';
 import Notfound from '../views/Notfound.vue';
 import createTag from '../views/CreateTag.vue';
 import Details from '../views/Details.vue';
+import Calendar from '../views/Calendar.vue';
+import Search from '../views/Search.vue';
 
 Vue.use(VueRouter);
 
@@ -19,6 +21,11 @@ const routes: RouteConfig[] = [
   {
     path: '/collection',
     name: 'Collection',
+    component: Collection,
+  },
+  {
+    path: '/editRecord',
+    name: 'editRecord',
     component: Collection,
   },
   {
@@ -42,9 +49,24 @@ const routes: RouteConfig[] = [
     component: createTag,
   },
   {
+    path: '/editTag',
+    name: 'editTag',
+    component: createTag,
+  },
+  {
     path: '/details',
     name: 'details',
     component: Details,
+  },
+  {
+    path: '/calendar',
+    name: 'calendar',
+    component: Calendar,
+  },
+  {
+    path: '/search',
+    name: 'search',
+    component: Search,
   },
   {
     path: '/about',

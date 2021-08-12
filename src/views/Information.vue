@@ -13,7 +13,7 @@
 
                     <div class="type">
                         <Icon class="sub" iconname="sub" :data-id="item.id" :data-type="item.type"></Icon>
-                        <router-link :to="{path:'createTag',query:{id:item.id}}">
+                        <router-link :to="{path:'editTag',query:{id:item.id}}">
                             <div class="typeRight">
                                 <span>{{item.name}}</span>
                                 <div class="iconWrapper">

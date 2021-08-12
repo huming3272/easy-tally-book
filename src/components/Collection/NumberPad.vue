@@ -37,6 +37,7 @@
                                 placeholder='选择日期'
                                 ref="datePicker"
                                @focus="clearDate()"
+                                @change="checkDate()"
                         >
 
                         </el-date-picker>
@@ -97,14 +98,19 @@
 <script lang="ts">
 import {Message} from 'element-ui';
 import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+dayjs.extend((isSameOrBefore));
 
 import {Component, Prop, Watch, Vue} from 'vue-property-decorator';
 @Component
 export default class NumberPad extends Vue {
   @Prop() public readonly amount!: number;
   // !为空不警告
+  @Prop() public syncNote!: string;
   @Prop(Boolean) public submit!: boolean;
   // output = this.value.toString();
+  @Prop() public syncDate!: string;
+  @Prop() public use?: string;
   public output = '0';
   public currentButton = '';
   public eDate =  dayjs().format('YYYY-MM-DD');
@@ -112,6 +118,7 @@ export default class NumberPad extends Vue {
   public note = '';
   @Watch('eDate')
   public editDate() {
+
     if (this.eDate) {
       this.date = dayjs(this.eDate).format('YYYY-MM-DD');
     }
@@ -120,9 +127,18 @@ export default class NumberPad extends Vue {
   public init() {
     this.clear();
     this.$emit('update:submit', false);
-
   }
 
+
+
+  public beforeMount() {
+    if (this.$route.query.id) {
+      this.output = String(this.amount);
+      this.note = this.syncNote;
+      this.eDate = String(this.syncDate);
+    }
+
+  }
   public mounted() {
       this.editDate();
   }
@@ -131,6 +147,17 @@ export default class NumberPad extends Vue {
     return parseFloat(this.output);
   }
 
+  public checkDate() {
+    if (dayjs(this.eDate).isSameOrBefore(dayjs().format('YYYY-MM-DD'), 'date') === false) {
+      this.eDate = dayjs().format('YYYY-MM-DD');
+      return this.$message({
+        message: '请输入今天及之前的日期',
+        type: 'warning',
+        duration: 1000,
+        offset: 200,
+      });
+    }
+  }
   public clearDate() {
     this.eDate = '';
   }
@@ -152,18 +179,27 @@ export default class NumberPad extends Vue {
   }
 
   public numInput(inputButton: string) {
+    // let str =
     if (this.output.indexOf('.') >= 0 && inputButton === '.') {
       return;
     }
-    if (this.output.length >= 16) {
+
+    if (this.output.length >= 12) {
+      // 限制位数
       return;
     }
+
     if ('0123456789.'.indexOf(inputButton) >= 0) {
       if (this.output === '0' && inputButton !== '.') {
         this.output = inputButton;
         return;
       }
+      if (this.output.indexOf('.') > -1 && this.output.length - this.output.indexOf('.') >= 3) {
+        // 不允许输入小数点后超过2位的金钱
+        return;
+      }
       this.output += inputButton;
+
       return;
     }
   }
@@ -209,13 +245,28 @@ export default class NumberPad extends Vue {
           offset: 150,
         },
       );
+    }
+    if (!this.note) {
+      return this.$message({
+          message: '请填写备注',
+          type: 'warning',
+          duration: 2000,
+          offset: 150,
+        },
+      );
 
     }
-    this.$emit('update:note', this.note);
-    this.$emit('update:date', this.date);
 
+
+    this.$emit('update:syncNote', this.note);
+    this.$emit('update:syncDate', this.date);
     this.$emit('submit', this.parse);
-    this.clear();
+    if (this.use === 'edit') {
+      return;
+    } else {
+      this.clear();
+    }
+
 
   }
 

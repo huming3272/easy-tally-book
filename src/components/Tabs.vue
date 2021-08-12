@@ -1,7 +1,7 @@
 <template>
     <div class="tabsWrapper">
         <div class="tabs">
-            <span :class="{'active':state==='pay'}" @click="select('pay')">支出</span>
+            <span :class="{'active':state==='pay'}" @click="select('pay')" >支出</span>
             <span :class="{'active':state==='earn'}" @click="select('earn')">收入</span>
         </div>
     </div>
@@ -15,6 +15,7 @@ import {Component, Prop, Watch} from 'vue-property-decorator';
 export default class Tabs extends Vue {
     @Prop(String) public value!: string;
     @Prop() public submit!: boolean;
+
     public state = 'pay';
     @Watch('submit')
     public init() {
@@ -23,9 +24,16 @@ export default class Tabs extends Vue {
         }
 
     }
+    public beforeMount() {
+        if (this.$route.query.id) {
+          this.state = this.value;
+        }
+        this.$emit('update:value', this.state);
+    }
     public select(state: string) {
         this.state = state;
         this.$emit('update:value', this.state);
+
     }
 }
 </script>

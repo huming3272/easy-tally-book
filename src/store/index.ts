@@ -1,7 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import iconDatas from '@/constant/iconDatas.ts';
+import toFloat from '@/lib/toFloat.ts';
 import { Message, MessageBox  } from 'element-ui';
+
 
 Vue.use(Vuex);
 
@@ -14,7 +16,7 @@ export default new Vuex.Store({
       mergeIcon: [] as CreatedTags[],
       existName: false,
       tallyRecord: [] as RecordItem[],
-
+      searchWord: '',
   },
   getters: {
   },
@@ -46,6 +48,19 @@ export default new Vuex.Store({
       }
     },
     createTags: (state, newTags: CreatedTags) => {
+      const isNameExist = state.mergeIcon.filter((item: CreatedTags) => {
+        return item.name === newTags.name;
+      });
+      if (isNameExist.length > 0) {
+        return Message(
+          {
+            message: '标签已存在该名称',
+            type: 'warning',
+            duration: 1000,
+            offset: 150,
+          },
+        );
+      }
       state.selfTagsList.push(newTags);
       localStorage.setItem('selfTagsList', JSON.stringify(state.selfTagsList));
       Message({
@@ -55,7 +70,20 @@ export default new Vuex.Store({
         offset: 150,
       });
     },
-    updateTags: (state, payload: {id: number, newTags: string}) => {
+    updateTags: (state, payload: {id: number, newTags: CreatedTags}) => {
+      const isNameExist = state.mergeIcon.filter((item: CreatedTags) => {
+        return item.name === payload.newTags.name;
+      })[0];
+      if (isNameExist.id !== payload.id) {
+        return Message(
+          {
+            message: '标签名不能相同',
+            type: 'warning',
+            duration: 1000,
+            offset: 150,
+          },
+        );
+      }
       const currentTag = state.selfTagsList.filter((item) => {
         return item.id === payload.id;
       })[0];
@@ -93,8 +121,86 @@ export default new Vuex.Store({
       state.existName = false;
     },
     fetchRecord: (state) => {
-      state.tallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
+
+      const formatTallyRecord = JSON.parse(localStorage.getItem('tallyRecord') || '[]');
+
+      for (const record of formatTallyRecord) {
+        const iconData = state.mergeIcon.filter((item: CreatedTags) => {
+          return item.id === record.tagId;
+        })[0];
+        if (!iconData) {
+          return Message(
+            {
+              message: '记录包含的标签不存在，请确认。',
+              type: 'warning',
+              duration: 1000,
+              offset: 150,
+            },
+          );
+        }
+        record.name = iconData.name;
+        record.iconName = iconData.src;
+
+        record.amount = toFloat(record.amount);
+
+      }
+
+      state.tallyRecord = formatTallyRecord;
+
     },
+    updateRecord: (state, payload= {} as RecordItem) => {
+      const currentRecord = state.tallyRecord.filter((item: RecordItem) => {
+        return item.id === payload.id;
+      })[0];
+      if (!currentRecord) {
+        // 如果找不到当前记录，就返回出去
+        return Message({
+          message: '编辑失败,请确认id是否存在',
+          type: 'warning',
+          duration: 1000,
+          offset: 150,
+        });
+      }
+      const index =  state.tallyRecord.indexOf(currentRecord);
+      state.tallyRecord[index] = payload;
+
+      localStorage.setItem('tallyRecord', JSON.stringify(state.tallyRecord));
+
+      Message({
+        message: '编辑成功',
+        type: 'success',
+        duration: 1000,
+        offset: 150,
+      });
+    },
+    deleteRecord: (state, id: number) => {
+      if (id) {
+        const currentRecord = state.tallyRecord.filter((item: RecordItem) => {
+          return item.id === id;
+        })[0];
+        if (!currentRecord) {
+          // 如果找不到当前记录，就返回出去
+          return Message({
+            message: '删除失败,请确认id是否存在',
+            type: 'warning',
+            duration: 1000,
+            offset: 150,
+          });
+        }
+        const index =  state.tallyRecord.indexOf(currentRecord);
+        state.tallyRecord.splice(index, 1);
+        localStorage.setItem('tallyRecord', JSON.stringify(state.tallyRecord));
+
+      } else {
+        return Message({
+          message: '请确认id是否存在',
+          type: 'warning',
+          duration: 1000,
+          offset: 150,
+        });
+      }
+    }
+    ,
     removeTag: (state, event) => {
       const currentElement = event.target;
       // console.dir(currentElement)
@@ -110,7 +216,11 @@ export default new Vuex.Store({
         // 为空就不运行
         return;
       }
-
+      const isTagExist = state.tallyRecord.filter(
+        (item: RecordItem) => {
+          return item.tagId === parseInt(currentSvg.id, 10);
+        },
+      )[0];
       if (currentSvg.type === 'creation') {
 
         MessageBox.confirm('永久删除该标签?', '提示', {
@@ -119,16 +229,12 @@ export default new Vuex.Store({
           type: 'warning',
         }).then(() => {
 
-          const isTagExist = state.tallyRecord.filter(
-            (item: RecordItem) => {
-              return item.tagId === parseInt(currentSvg.id, 10);
-            },
-          )[0];
+
           if (isTagExist) {
             return Message({
               dangerouslyUseHTMLString: true,
               message: `
-                  <h3>发现标签在记账中出现，请删除记账记录后重试</h3>
+                  <h3>标签在记账中出现，请删除记账记录后重试</h3>
                   <hr>
                   <ul>
                           <br>
@@ -171,6 +277,27 @@ export default new Vuex.Store({
           cancelButtonText: '取消',
           type: 'warning',
         }).then(() => {
+
+          if (isTagExist) {
+            return Message({
+              dangerouslyUseHTMLString: true,
+              message: `
+                  <h3>标签在记账中出现，请删除记账记录后重试</h3>
+                  <hr>
+                  <ul>
+                          <br>
+                          <li>
+                              <span >备注: &nbsp;</span><span >${isTagExist.note}</span>
+                          </li>
+                          <li>
+                              <span >金额: &nbsp;</span><span >${isTagExist.amount}</span>
+                          </li>
+                  </ul>`,
+              type: 'warning',
+              duration: 3000,
+              offset: 150,
+            });
+          }
           const currentTag = state.iconDatas.filter((item: CreatedTags) => {
             return item.id === parseInt(currentSvg.id, 10);
           })[0];
@@ -181,12 +308,12 @@ export default new Vuex.Store({
           localStorage.setItem('pendingDatas', JSON.stringify(state.pendingDatas));
           Message({
             type: 'success',
-            message: '删除成功!',
+            message: '转移成功!',
           });
         }).catch(() => {
           Message({
             type: 'info',
-            message: '已取消删除',
+            message: '已取消转移',
           });
         });
 
@@ -222,6 +349,10 @@ export default new Vuex.Store({
         });
       }
     },
+    search(state, word: string) {
+      state.searchWord = word;
+    },
+
   },
   actions: {
   },

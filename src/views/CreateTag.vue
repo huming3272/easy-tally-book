@@ -14,7 +14,7 @@
             <input v-model="newTags.name" type="text" maxlength=10 ref="input" placeholder="请输入标签名">
             <span @click="clearName">清除</span>
         </div>
-        <Tags :text="false" :data="iconDatas"  :currentTagSrc.sync="newTags.src"></Tags>
+        <Tags :text="false" :data="iconDatas" use="createTags"  :currentTagSrc.sync="newTags.src"></Tags>
     </div>
 </template>
 
@@ -31,7 +31,7 @@ import {Component, Vue, Watch} from 'vue-property-decorator';
 export default class CreateTag extends Vue {
   public iconDatas  = [] as CreatedTags[];
   public title = '';
-  public id = 0 || parseInt(this.$route.query.id as string, 10);
+  public id = 0;
   public selfTagsList: CreatedTags[] = JSON.parse(localStorage.getItem('selfTagsList') || '[]');
   public newTags: CreatedTags = {
     name: '',
@@ -43,6 +43,7 @@ export default class CreateTag extends Vue {
   public beforeMount() {
     this.$store.commit('fetchTags');
     this.iconDatas = this.$store.state.iconDatas;
+    this.id = parseInt(this.$route.query.id as string, 10) || 0;
     if (this.id) {
       this.title = '修改标签';
       this.$store.commit('getCurrentTags', this.id);
@@ -58,12 +59,14 @@ export default class CreateTag extends Vue {
     this.newTags.name = '';
   }
   public save() {
+
     if (this.newTags.name) {
-      this.$store.commit('existName', this.newTags.name);
-      if (this.$store.state.existName) {
-        this.$store.commit('iniExistName');
-        return;
-      }
+
+      // this.$store.commit('existName', this.newTags.name);
+      // if (this.$store.state.existName) {
+      //   this.$store.commit('iniExistName');
+      //   return;
+      // }
       if (this.newTags.name.length > 10) {
         return this.$message({
           message: '标签字数超过10字',
@@ -74,11 +77,14 @@ export default class CreateTag extends Vue {
       if (this.id) {
         // 有id说明要修改标签属性
         this.$store.commit('updateTags', {id: this.id, newTags: this.newTags});
+
         return;
       } else if (!this.id) {
         // 链接没id就说明是创建标签
+
         this.newTags.id = tagId();
         this.$store.commit('createTags', this.newTags);
+
       }
 
     } else if (!this.newTags.name) {

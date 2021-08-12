@@ -1,7 +1,7 @@
 <template>
     <div class="tags">
         <ul @click="triggerTags">
-            <li v-for="item in iconDatas" :key="item.id" :data-icon-id="item.id" :data-icon-src="item.src" :data-icon-name="item.name">
+            <li v-for="item in iconDatas" ref="tag" :key="item.id" :data-icon-id="item.id" :data-icon-src="item.src" :data-icon-name="item.name">
                 <div class="iconWrapper" :class="{'selected': selectedTag(item.id,item.src)}">
                     <Icon class="icon"  :iconname="item.src"></Icon>
                 </div>
@@ -23,6 +23,9 @@ export default class Tags extends Vue {
   @Prop() public text!: boolean;
   @Prop() public currentTagSrc?: string;
   @Prop() public use?: string;
+  @Prop() public scrollTag?: string;
+  @Prop() public value?: string;
+
   public iconDatas = this.data;
   public selected = -1;
   public tagSrc = '';
@@ -40,11 +43,36 @@ export default class Tags extends Vue {
       this.forEmit();
     }
   }
-
-  public mounted() {
-    this.initTag();
+  public beforeMount() {
+        if (this.$route.query.id) {
+          this.selected = Number(this.value);
+        } else {
+          this.initTag();
+        }
   }
 
+  public mounted() {
+    if (this.use === 'createTags') {
+      this.srcollCurrentTag();
+    }
+
+  }
+
+  public srcollCurrentTag() {
+    // console.log(this.$refs.tag,'tag')
+    const tags = this.$refs.tag || [] as any;
+    const currentTag =  tags.filter((item: any) => {
+        return parseInt(item.dataset.iconId, 10) === this.selected;
+    })[0];
+    if (currentTag) {
+      // 如果存在时
+      this.$emit('update:scrollTag', currentTag.offsetTop);
+    }
+
+
+    // offsetTop
+    // dataset.iconId
+  }
   public forEmit() {
     this.$emit('update:tagName', this.tagName);
     this.$emit('update:value', this.selected);
@@ -52,6 +80,7 @@ export default class Tags extends Vue {
   }
 
   public selectedTag(id: number, src: string) {
+    // console.log(id,'图标id',src)
     if (this.use === 'collection') {
         if (id === this.selected) {
           return true;
@@ -75,6 +104,7 @@ export default class Tags extends Vue {
         this.selected = parseInt(li[0].dataset.iconId, 10);
         this.tagSrc = li[0].dataset.iconSrc;
         this.tagName = li[0].dataset.iconName;
+
         this.forEmit();
 
     }
@@ -98,6 +128,7 @@ export default class Tags extends Vue {
 
             > li {
                 /*flex: 0 25%;*/
+                overflow:hidden;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -109,6 +140,11 @@ export default class Tags extends Vue {
                 cursor: pointer;
                 > p {
                     margin-top: 5px;
+                    user-select: none;
+                    width: 100%;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                    white-space:nowrap;
                 }
 
                 > .iconWrapper {
