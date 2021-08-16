@@ -314,8 +314,9 @@ export default class Chart extends Vue {
       const currentMonthData = [];
       for (let n = 0; n < monthDay; n++) {
         currentMonthData.push(monthHead.add(n, 'day').format('YYYY-MM-DD'));
+
       }
-      monthShow.push({date: currentMonth, name: (parseInt(monthHead.format('MM'), 10) + '月')});
+      monthShow.push({date: currentMonthData, name: (parseInt(monthHead.format('MM'), 10) + '月')});
     }
 
     // //得到日期组
@@ -323,12 +324,13 @@ export default class Chart extends Vue {
     //
     this.dateGroup.dateShow = monthShow;
     this.dateGroup.currentDate = currentMonth;
+
     this.activeName = String(this.dateGroup.dateShow.length - 1);
     this.updateMonthGroup();
-
   }
 
   public updateMonthGroup() {
+
     interface Types {
       typeCount: string;
       typeIcon: string;
@@ -350,9 +352,10 @@ export default class Chart extends Vue {
       const currentDay = JSON.parse(JSON.stringify(this.tallyRecord.filter((item) => {
         return item.date === date;
       })));
-      // console.log(currentDay,'currentDay')
+
       resolutionMonthData.push(currentDay);
     }
+
     currentMonthData.record = resolutionMonthData;
     // console.log(currentMonthData.record,'record')
 
@@ -426,6 +429,7 @@ export default class Chart extends Vue {
       dateCount: currentMonthData.monthCount,
       types: currentMonthData.types,
     };
+    // console.log('month',this.dateGroup.currentData.dateCount )
   }
 
   /*年*/
@@ -572,10 +576,12 @@ export default class Chart extends Vue {
 
   public dateClick(tab: any, event: any) {
     this.dateGroup.currentDate = this.dateGroup.dateShow[parseInt(this.activeName, 10)].date;
+    // console.log(this.dateGroup.currentDate,'当前日期')
     if (this.dateSelected === 'week') {
       this.updateWeekGroup();
     } else if (this.dateSelected === 'month') {
       this.updateMonthGroup();
+
     } else if (this.dateSelected === 'year') {
       this.calcYearGroup();
     }

@@ -212,7 +212,7 @@
             justify-content: center;
             align-items: center;
             position: absolute;
-            bottom: 80px;
+            bottom: 150px;
             right: 30px;
         }
     }
