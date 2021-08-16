@@ -17,5 +17,9 @@ module.exports = {
         require('svg-sprite-loader/plugin')
         , [{plainSprite: true}])
     config.module.rule('svg').exclude.add(dir) //其他 svg loader 排除icons目录
-  }
+  },
+  publicPath: process.env.NODE_ENV === 'production'
+      ? '/easy-tally-book/'
+      : '/'
+
 }

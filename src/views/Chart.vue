@@ -863,7 +863,7 @@ export default class Chart extends Vue {
 
 <style lang='scss' scoped>
     .ChartWrapper {
-        padding-bottom: 68px;
+        /*padding-bottom: 68px;*/
 
         > .title {
             position: relative;

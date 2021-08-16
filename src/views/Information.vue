@@ -123,8 +123,8 @@ export default class Information extends Vue {
         box-shadow: 0 -4px 5px -5px rgba(0, 0, 0, 0.2) inset;
         position: relative;
         padding-bottom: 20px;
-        background: #eeeeee;
-        position: fixed;
+        /*background: #eeeeee;*/
+        /*position: fixed;*/
         width: 100%;
         max-width: 500px;
 
@@ -149,12 +149,13 @@ export default class Information extends Vue {
     }
 
     .typeWrapper {
-        margin: 85px 0 68px 0;
+        /*margin: 85px 0 68px 0;*/
         color: #b4b4b4;
         font-size: 18px;
         text-align: left;
         background: #ffffff;
-
+        height: calc(100vh - 158px);
+        overflow-y:auto;
         .typeTitle {
             font-size: 16px;
             padding: 15px 12px;
@@ -164,12 +165,13 @@ export default class Information extends Vue {
             > li {
                 border-bottom: 1px solid #e2e2e2;
                 padding: 0 12px;
-
+                background: white;
                 .type {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     padding: 15px 0;
+
 
                     > .sub {
                         width: 30px;
@@ -227,6 +229,25 @@ export default class Information extends Vue {
                 }
 
             }
+        }
+        &::-webkit-scrollbar {
+            /*滚动条整体样式*/
+            width: 10px; /*高宽分别对应横竖滚动条的尺寸*/
+            height: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            /*滚动条里面小方块*/
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            background: #535353;
+        }
+
+        &::-webkit-scrollbar-track {
+            /*滚动条里面轨道*/
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            background: #ededed;
         }
     }
 

@@ -196,8 +196,7 @@ export default class Details extends Vue {
                     > span {
                         padding-left: 10px;
                         width: 80%;
-                        white-space: nowrap;
-                        overflow-x: auto;
+                        word-break:break-all;
                         text-align: left;
                         &::-webkit-scrollbar {
                             /*滚动条整体样式*/
@@ -223,10 +222,9 @@ export default class Details extends Vue {
                 }
 
                 > .price {
-                    width: 50%;
+                    width: 40%;
                     text-align: right;
-                    white-space: nowrap;
-                    overflow-x: auto;
+                    word-break:break-all;
                 }
             }
 

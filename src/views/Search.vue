@@ -143,15 +143,14 @@ export default class Search extends Vue {
                     font-weight: 600;
                     width: 40%;
                     text-align: right;
-                    white-space: nowrap;
-                    overflow-x: auto;
+                    word-break:break-all;
                 }
 
                 .iconWrapper {
                     max-width: 50%;
                     display: flex;
                     justify-content: space-between;
-
+                    align-items: center;
                     > .icon {
                         background: #212121;
                         color: #e5e5e5;
@@ -165,22 +164,26 @@ export default class Search extends Vue {
                     > div {
                         margin-left: 5%;
                         text-align: left;
-
+                        p{
+                            width: 100px;
+                            word-break:break-all;
+                        }
 
                         p:nth-child(0n+1) {
                             font-size: 16px;
-                            font-weight: 600;
-                            overflow-x: auto;
-                            white-space: nowrap;
-                            width:80%;
+                        /*    font-weight: 600;*/
+                        /*    !*overflow-x: auto;*!*/
+                        /*    white-space: nowrap;*/
+                        /*    width:80%;*/
+                            border-bottom: 1px solid #eee;
                         }
 
                         p:nth-child(0n+2) {
                             font-size: 14px;
-                            color: #9e9e9e;
-                            width: 100px;
-                            overflow-x: auto;
-                            white-space: nowrap;
+                        /*    color: #9e9e9e;*/
+                        /*    width: 100px;*/
+                        /*    overflow-x: auto;*/
+                        /*    white-space: nowrap;*/
                         }
 
 
