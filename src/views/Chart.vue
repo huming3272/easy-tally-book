@@ -223,15 +223,19 @@ export default class Chart extends Vue {
           sameDayCount = sameDayCount + Number(todayItem.amount);
 
         }
-        // console.log(sameDayCount, 'sameday');
-        currentWeekData.dayCount.push(toFloat(sameDayCount) as string);
+
+
+        currentWeekData.dayCount.push(toFloat(formatTsNum(this.exactingFloat(sameDayCount))) as string);
+        // console.log('周和',sameDayCount)
+
+
       }
     }
 
     // 求周和
     for (const oneday of currentWeekData.dayCount) {
       const dayCount = Number(oneday);
-
+      // console.log(dayCount,'dayCount')
       let weekCount = Number(currentWeekData.weekCount);
       // console.log(weekCount,'weekCount1')
       weekCount = Number(formatTsNum(this.exactingFloat(weekCount + dayCount)));
@@ -257,6 +261,7 @@ export default class Chart extends Vue {
     for (const tagId of Object.keys(typesId)) {
       const weekCount = Number(currentWeekData.weekCount);
 
+
       const sameType = flatWeekData.filter((item: RecordItem) => {
         return item.tagId === typesId[tagId];
       });
@@ -273,7 +278,7 @@ export default class Chart extends Vue {
           typeName: sameType[0].name,
           typePercent: this.exactingFloat((typeCount / Number(weekCount) * 100)),
         };
-          // console.log(typeCount / Number(weekCount),'算百分比')
+
         currentWeekData.types.push(type);
       }
     }
@@ -370,7 +375,7 @@ export default class Chart extends Vue {
 
         }
         // console.log(sameDayCount, 'sameday');
-        currentMonthData.dayCount.push(toFloat(sameDayCount) as string);
+        currentMonthData.dayCount.push(toFloat(formatTsNum(this.exactingFloat(sameDayCount))) as string);
       }
     }
 
@@ -454,7 +459,7 @@ export default class Chart extends Vue {
 
 
     for (let i = todayToJanuary; i >= 0; i--) {
-      // 每周从周一开始递增
+      // 当月从月末开始递减少
       const month = currentMonthDate.subtract(i, 'month').format('YYYY-MM');
       currentYear.push(month);
     }
@@ -496,31 +501,33 @@ export default class Chart extends Vue {
     currentMonthData.record = resolutionYearData;
     // console.log(currentMonthData.record,'record')
 
-    for (const today of resolutionYearData) {
-      // console.log(today, '一个today');
-      if (!(today instanceof Array)) {
+    for (const month of resolutionYearData) {
+      // 今年已过月
+      // console.log(month, '一个today');
+      if (!(month instanceof Array)) {
         currentMonthData.monthCount.push(String(0));
-      } else if (today instanceof Array) {
+      } else if (month instanceof Array) {
         let sameDayCount = 0;
-        for (const todayItem of today) {
+        for (const todayItem of month) {
           sameDayCount = sameDayCount + Number(todayItem.amount);
 
         }
         // console.log(sameDayCount, 'sameday');
-        currentMonthData.monthCount.push(toFloat(sameDayCount) as string);
+        currentMonthData.monthCount.push(toFloat(formatTsNum(this.exactingFloat(sameDayCount))) as string);
       }
     }
 
     // 求月和
-    for (const oneday of currentMonthData.monthCount) {
-      const dayCount = Number(oneday);
+    for (const monthTotal of currentMonthData.monthCount) {
+
+      const dayCount = Number(monthTotal);
       let monthCount = Number(currentMonthData.yearCount);
       monthCount = Number(formatTsNum(this.exactingFloat(monthCount + dayCount)));
       currentMonthData.yearCount = toFloat(monthCount) as string;
     }
 
     const flatYearData = this.flatten(resolutionYearData);
-    //  扁平化每周的数据
+    //  扁平化每月的数据
 
 
     const typesId = {} as any;
@@ -633,20 +640,23 @@ export default class Chart extends Vue {
     this.tallyRecord = tallyRecord;
   }
 
-  public exactingFloat(value: number) {
+  public exactingFloat(value: number|string) {
     const precision = 20;
-
-    let result = math.format(value, precision);
-
-    if (result.indexOf('e')) {
-      const toNumber = Number(result);
-      result = toNumber.toLocaleString();
-
-      return result;
-    } else {
-
-      return result;
+    let argument = value;
+    if (typeof argument === 'string') {
+        argument = Number(argument);
     }
+    let result = math.format(argument, precision);
+    if (result.indexOf('e')) {
+        const toNumber = Number(result);
+        result = toNumber.toLocaleString();
+        return result;
+      } else {
+
+        return result;
+      }
+
+
   }
 
   public flatten(arr: any) {

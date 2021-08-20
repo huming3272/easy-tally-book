@@ -13,6 +13,8 @@ function formatTsNum(tsNum: string|number, numType: 'num'|'tsNum'|null= 'num') {
     return tsNum.toLocaleString();
   } else if (numType === 'num' || !numType) {
       return tsNum;
+    } else {
+      return tsNum;
     }
   }
 

@@ -13,6 +13,8 @@ function toFloat(num: number|string) {
 
     return result.toFixed(2) || result;
     // return出去是字符串
+  } else {
+    return String(result);
   }
 }
 
