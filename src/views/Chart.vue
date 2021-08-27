@@ -269,9 +269,14 @@ export default class Chart extends Vue {
         const typeCountArray = sameType.map((item) => {
           return Number(item.amount);
         });
-        const typeCount = typeCountArray.reduce((count, item) => {
-          return count + item;
-        }, 0);
+        let typeCount = 0;
+        //   typeCountArray.reduce((count, item) => {
+        //   return count + item;
+        // }, 0);
+        for (const item of typeCountArray) {
+          typeCount = Number(this.exactingFloat(typeCount + item));
+        }
+
         const type = {
           typeCount: toFloat(typeCount) as string,
           typeIcon: sameType[0].iconName,

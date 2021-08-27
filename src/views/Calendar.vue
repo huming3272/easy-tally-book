@@ -88,10 +88,10 @@ export default class Calendar extends Vue {
     let pay = 0;
     for (const item of currentData) {
       if (item.type === 'earn') {
-        earn = earn + Number(formatTsNum(this.exactingFloat(Number(item.amount))));
+        earn = Number(formatTsNum(this.exactingFloat( earn + Number(item.amount))));
 
       } else if (item.type === 'pay') {
-        pay = pay + Number(formatTsNum(this.exactingFloat(Number(item.amount))));
+        pay = Number(formatTsNum(this.exactingFloat(pay + Number(item.amount))));
       }
     }
 
@@ -224,7 +224,7 @@ export default class Calendar extends Vue {
                 }
 
                 > .sameDay {
-                    height: calc(100vh - 557px);
+                    height: calc(100vh - 595px);
                     overflow: auto;
                     a {
                         border-top: 1px solid #e2e2e2;
